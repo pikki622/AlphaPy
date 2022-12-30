@@ -70,8 +70,7 @@ def portfolio_name(group_name, tag):
         Portfolio name.
 
     """
-    port_name = '.'.join([group_name, tag, "portfolio"])
-    return port_name
+    return '.'.join([group_name, tag, "portfolio"])
 
 
 #
@@ -158,7 +157,7 @@ class Portfolio():
                 maxloss = 0.1):
         # create portfolio name
         pn = portfolio_name(group_name, tag)
-        if not pn in Portfolio.portfolios:
+        if pn not in Portfolio.portfolios:
             return super(Portfolio, cls).__new__(cls)
         else:
             logger.info("Portfolio %s already exists", pn)
@@ -795,7 +794,7 @@ def kick_out(p, tdate):
             kovalue[i] = pos.pdata.loc[tdate][koby]
     koorder = np.argsort(np.argsort(kovalues))
     if descending:
-        koorder = [i for i in reversed(koorder)]
+        koorder = list(reversed(koorder))
     if numpos >= maxpos:
         freepos = numpos - maxpos + p.kopos
         # close the top freepos positions
@@ -982,15 +981,14 @@ def exec_trade(p, name, order, quantity, price, tdate):
     # check the dynamic position sizing variable
     if not p.posby:
         tsize = quantity
+    elif order in [Orders.le, Orders.se]:
+        pf = Frame.frames[frame_name(name, p.space)].df
+        cv = float(pf.loc[tdate][p.posby])
+        tsize = math.trunc((p.value * p.fixedfrac) / cv)
+        if quantity < 0:
+            tsize = -tsize
     else:
-        if order == Orders.le or order == Orders.se:
-            pf = Frame.frames[frame_name(name, p.space)].df
-            cv = float(pf.loc[tdate][p.posby])
-            tsize = math.trunc((p.value * p.fixedfrac) / cv)
-            if quantity < 0:
-                tsize = -tsize
-        else:
-            tsize = -pos.quantity
+        tsize = -pos.quantity
     # instantiate and allocate the trade
     newtrade = Trade(name, order, tsize, price, tdate)
     allocation = allocate_trade(p, pos, newtrade)
@@ -1117,10 +1115,7 @@ def gen_portfolio(model, system, group, tframe,
         pfrow = pf.loc[d]
         for key in positions:
             pos = positions[key]
-            if pos.quantity > 0:
-                value = pos.value
-            else:
-                value = -pos.value
+            value = pos.value if pos.quantity > 0 else -pos.value
             pfrow[pos.name] = value
         pfrow['cash'] = p.cash
         # update the portfolio returns

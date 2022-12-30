@@ -66,8 +66,7 @@ def analysis_name(gname, target):
         Value for the corresponding key.
 
     """
-    name = USEP.join([gname, target])
-    return name
+    return USEP.join([gname, target])
 
 
 #
@@ -103,7 +102,7 @@ class Analysis(object):
         name = model.specs['directory'].split(SSEP)[-1]
         target = model.specs['target']
         an = analysis_name(name, target)
-        if not an in Analysis.analyses:
+        if an not in Analysis.analyses:
             return super(Analysis, cls).__new__(cls)
         else:
             logger.info("Analysis %s already exists", an)

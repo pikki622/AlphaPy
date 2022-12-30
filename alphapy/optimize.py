@@ -222,7 +222,6 @@ def hyper_grid_search(model, estimator):
     gs_iters = model.specs['gs_iters']
     gs_random = model.specs['gs_random']
     gs_sample = model.specs['gs_sample']
-    gs_sample_pct = model.specs['gs_sample_pct']
     n_jobs = model.specs['n_jobs']
     scorer = model.specs['scorer']
     verbosity = model.specs['verbosity']
@@ -231,18 +230,13 @@ def hyper_grid_search(model, estimator):
 
     if gs_sample:
         length = len(X_train)
+        gs_sample_pct = model.specs['gs_sample_pct']
         subset = int(length * gs_sample_pct)
         indices = np.random.choice(length, subset, replace=False)
         X_train = X_train[indices]
         y_train = y_train[indices]
 
-    # Convert the grid to pipeline format
-
-    grid_new = {}
-    for k, v in list(grid.items()):
-        new_key = '__'.join(['est', k])
-        grid_new[new_key] = grid[k]
-
+    grid_new = {'__'.join(['est', k]): grid[k] for k, v in list(grid.items())}
     # Create the pipeline for grid search
 
     if feature_selection:
@@ -251,7 +245,7 @@ def hyper_grid_search(model, estimator):
                               percentile=fs_percentage)
         # Combine the feature selection and estimator grids.
         fs_grid = dict(fs__percentile=fs_uni_grid)
-        grid_new.update(fs_grid)
+        grid_new |= fs_grid
         # Create a pipeline with the selected features and estimator.
         pipeline = Pipeline([("fs", fs), ("est", est)])
     else:

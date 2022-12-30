@@ -144,11 +144,7 @@ def get_data(model, partition):
         else:
             logger.info("Target %s not found in %s", target, partition)
         # Extract features
-        if features == WILDCARD:
-            X = df
-        else:
-            X = df[features]
-
+        X = df if features == WILDCARD else df[features]
     # Labels are returned usually only for training data
     return X, y
 
@@ -172,22 +168,22 @@ def shuffle_data(model):
 
     """
 
-    # Extract model parameters.
-
-    seed = model.specs['seed']
     shuffle = model.specs['shuffle']
 
-    # Extract model data.
-
-    X_train = model.X_train
     y_train = model.y_train
 
     # Shuffle data
 
     if shuffle:
         logger.info("Shuffling Training Data")
+        # Extract model parameters.
+
+        seed = model.specs['seed']
         np.random.seed(seed)
         new_indices = np.random.permutation(y_train.size)
+        # Extract model data.
+
+        X_train = model.X_train
         model.X_train = X_train[new_indices]
         model.y_train = y_train[new_indices]
     else:
@@ -273,7 +269,7 @@ def sample_data(model):
     elif sampling_method == SamplingMethod.ensemble_easy:
         sampler = EasyEnsemble()
     else:
-        raise ValueError("Unknown Sampling Method %s" % sampling_method)
+        raise ValueError(f"Unknown Sampling Method {sampling_method}")
 
     # Get the newly sampled features.
 
@@ -320,10 +316,7 @@ def convert_data(df, index_column, intraday_data):
 
     if not isinstance(df.index, pd.DatetimeIndex):
         df.reset_index(inplace=True)
-        if intraday_data:
-            dt_column = df['date'] + ' ' + df['time']
-        else:
-            dt_column = df['date']
+        dt_column = df['date'] + ' ' + df['time'] if intraday_data else df['date']
         df[index_column] = pd.to_datetime(dt_column)
         df.set_index(pd.DatetimeIndex(df[index_column]),
                      drop=True, inplace=True)
@@ -416,8 +409,7 @@ def get_google_intraday_data(symbol, lookback_period, fractal):
     interval = 60 * int(re.findall('\d+', fractal)[0])
     # Google has a 50-day limit
     max_days = 50
-    if lookback_period > max_days:
-        lookback_period = max_days
+    lookback_period = min(lookback_period, max_days)
     # Set Google data constants
     toffset = 7
     line_length = 6
@@ -649,12 +641,16 @@ def get_quandl_data(schema, subschema, symbol, intraday_data, data_fractal,
 
     symbol = SSEP.join([subschema.upper(), symbol.upper()])
 
-    # Call the Pandas Web data reader.
-
-    df = get_pandas_data(schema, subschema, symbol, intraday_data, data_fractal,
-                         from_date, to_date, lookback_period)
-
-    return df
+    return get_pandas_data(
+        schema,
+        subschema,
+        symbol,
+        intraday_data,
+        data_fractal,
+        from_date,
+        to_date,
+        lookback_period,
+    )
 
 
 #
@@ -700,7 +696,7 @@ def get_yahoo_data(schema, subschema, symbol, intraday_data, data_fractal,
         mapper = {'H': 60, 'T': 1, 'min':1, 'S': 1./60}
         interval = math.ceil(interval * mapper[fractal])
         data_interval = ''.join([str(interval), 'm'])
-        qualifiers = '{}?range={}&interval={}'.format(symbol, data_range, data_interval)
+        qualifiers = f'{symbol}?range={data_range}&interval={data_interval}'
         request = url + qualifiers
         logger.info(request)
         response = requests.get(request)
@@ -794,7 +790,7 @@ def get_market_data(model, market_specs, group, lookback_period, intraday_data=F
 
     data_dir = SSEP.join([directory, 'data'])
     n_periods = 0
-    resample_data = True if fractal != data_fractal else False
+    resample_data = fractal != data_fractal
 
     # Date Arithmetic
 

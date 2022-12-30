@@ -55,7 +55,7 @@ def expand_dates(date_list):
             dates_str = [x.strftime('%Y-%m-%d') for x in dates_dt]
             expanded_dates.extend(dates_str)
         else:
-            logger.info("Error in date: %s" % item)
+            logger.info(f"Error in date: {item}")
     return expanded_dates
 
 
@@ -152,8 +152,7 @@ def day_of_week(rdate):
     dw : int
         Ordinal day of the week.
     """
-    dw = rdate % 7
-    return dw
+    return rdate % 7
 
 
 #
@@ -177,8 +176,7 @@ def day_of_year(gyear, gmonth, gday):
     dy : int
         Day number of year in RDate format.
     """
-    dy = subtract_dates(gyear - 1, 12, 31, gyear, gmonth, gday)
-    return dy
+    return subtract_dates(gyear - 1, 12, 31, gyear, gmonth, gday)
 
 
 #
@@ -202,8 +200,7 @@ def days_left_in_year(gyear, gmonth, gday):
     days_left : int
         Calendar days remaining in RDate format.
     """
-    days_left = subtract_dates(gyear, gmonth, gday, gyear, 12, 31)
-    return days_left
+    return subtract_dates(gyear, gmonth, gday, gyear, 12, 31)
 
 
 #
@@ -229,8 +226,7 @@ def first_kday(k, gyear, gmonth, gday):
     fkd : int
         first-kday in RDate format.
     """
-    fkd = nth_kday(1, k, gyear, gmonth, gday)
-    return fkd
+    return nth_kday(1, k, gyear, gmonth, gday)
 
 
 #
@@ -262,13 +258,15 @@ def gdate_to_rdate(gyear, gmonth, gday):
     else:
         rfactor = -2
 
-    rdate = 365 * (gyear - 1) \
-            + math.floor((gyear - 1) / 4) \
-            - math.floor((gyear - 1) / 100) \
-            + math.floor((gyear - 1) / 400) \
-            + math.floor(((367 * gmonth) - 362) / 12) \
-            + gday + rfactor
-    return(rdate)
+    return (
+        365 * (gyear - 1)
+        + math.floor((gyear - 1) / 4)
+        - math.floor((gyear - 1) / 100)
+        + math.floor((gyear - 1) / 400)
+        + math.floor(((367 * gmonth) - 362) / 12)
+        + gday
+        + rfactor
+    )
 
 
 #
@@ -343,8 +341,7 @@ def kday_after(rdate, k):
     kda : int
         kday-after in RDate format.
     """
-    kda = kday_on_before(rdate + 7, k)
-    return kda
+    return kday_on_before(rdate + 7, k)
 
 
 #
@@ -366,8 +363,7 @@ def kday_before(rdate, k):
     kdb : int
         kday-before in RDate format.
     """
-    kdb = kday_on_before(rdate - 1, k)
-    return kdb
+    return kday_on_before(rdate - 1, k)
 
 
 #
@@ -389,8 +385,7 @@ def kday_nearest(rdate, k):
     kdn : int
         kday-nearest in RDate format.
     """
-    kdn = kday_on_before(rdate + 3, k)
-    return kdn
+    return kday_on_before(rdate + 3, k)
 
 
 #
@@ -412,8 +407,7 @@ def kday_on_after(rdate, k):
     kdoa : int
         kday-on-or-after in RDate format.
     """
-    kdoa = kday_on_before(rdate + 6, k)
-    return kdoa
+    return kday_on_before(rdate + 6, k)
 
 
 #
@@ -435,8 +429,7 @@ def kday_on_before(rdate, k):
     kdob : int
         kday-on-or-before in RDate format.
     """
-    kdob = rdate - day_of_week(rdate - k)
-    return kdob
+    return rdate - day_of_week(rdate - k)
 
 
 #
@@ -462,8 +455,7 @@ def last_kday(k, gyear, gmonth, gday):
     lkd : int
         last-kday in RDate format.
     """
-    lkd = nth_kday(-1, k, gyear, gmonth, gday)
-    return lkd
+    return nth_kday(-1, k, gyear, gmonth, gday)
 
 
 #
@@ -485,14 +477,8 @@ def leap_year(gyear):
     """
 
     mod1 = (gyear % 4 == 0)
-    mod2 = True
-    if gyear % 100 == 0:
-        mod2 = gyear % 400 == 0
-
-    leap_year = False
-    if mod1 and mod2:
-        leap_year = True
-    return leap_year
+    mod2 = gyear % 400 == 0 if gyear % 100 == 0 else True
+    return mod1 and mod2
 
 
 #
@@ -610,11 +596,7 @@ def nth_kday(n, k, gyear, gmonth, gday):
     """
 
     rdate = gdate_to_rdate(gyear, gmonth, gday)
-    if n > 0:
-        nthkday = 7 * n + kday_before(rdate, k)
-    else:
-        nthkday = 7 * n + kday_after(rdate, k)
-    return nthkday
+    return 7 * n + kday_before(rdate, k) if n > 0 else 7 * n + kday_after(rdate, k)
 
 
 #
@@ -733,11 +715,7 @@ def rdate_to_gyear(rdate):
     n1 = math.floor(d3 / 365)
 
     theyear = 400 * n400 + 100 * n100 + 4 * n4 + n1
-    if n100 == 4 or n1 == 4:
-        gyear = theyear
-    else:
-        gyear = theyear + 1
-    return gyear
+    return theyear if n100 == 4 or n1 == 4 else theyear + 1
 
 
 #
@@ -804,9 +782,9 @@ def subtract_dates(gyear1, gmonth1, gday1, gyear2, gmonth2, gday2):
     delta_days : int
         Difference in days in RDate format.
     """
-    delta_days = gdate_to_rdate(gyear2, gmonth2, gday2) \
-                 - gdate_to_rdate(gyear1, gmonth1, gday1)
-    return delta_days
+    return gdate_to_rdate(gyear2, gmonth2, gday2) - gdate_to_rdate(
+        gyear1, gmonth1, gday1
+    )
 
 
 
@@ -857,8 +835,7 @@ def mlk_day(gyear):
     mlkday : int
         Martin Luther King Day in RDate format.
     """
-    mlkday = nth_kday(3, 1, gyear, 1, 1)
-    return mlkday
+    return nth_kday(3, 1, gyear, 1, 1)
 
 
 #
@@ -878,8 +855,7 @@ def valentines_day(gyear):
     valentines : int
         Valentine's Day in RDate format.
     """
-    valentines = gdate_to_rdate(gyear, 2, 14)
-    return valentines
+    return gdate_to_rdate(gyear, 2, 14)
 
 
 #
@@ -899,8 +875,7 @@ def presidents_day(gyear):
     prezday : int
         President's Day in RDate format.
     """
-    prezday = nth_kday(3, 1, gyear, 2, 1)
-    return prezday
+    return nth_kday(3, 1, gyear, 2, 1)
 
 
 #
@@ -922,8 +897,7 @@ def saint_patricks_day(gyear):
     patricks : int
         Saint Patrick's Day in RDate format.
     """
-    patricks = gdate_to_rdate(gyear, 3, 17)
-    return patricks
+    return gdate_to_rdate(gyear, 3, 17)
 
 
 #
@@ -943,8 +917,7 @@ def good_friday(gyear):
     gf : int
         Good Friday in RDate format.
     """
-    gf = easter_day(gyear) - 2
-    return gf
+    return easter_day(gyear) - 2
 
 
 #
@@ -968,13 +941,12 @@ def easter_day(gyear):
     century = math.floor(gyear / 100) + 1
     epacts = (14 + 11 * (gyear % 19) - math.floor(3 * century / 4) \
              + math.floor((5 + 8 * century) / 25)) % 30
-    if epacts == 0 or (epacts == 1 and 10 < (gyear % 19)):
+    if epacts == 0 or epacts == 1 and gyear % 19 > 10:
         epacta = epacts + 1
     else:
         epacta = epacts
     rdate = gdate_to_rdate(gyear, 4, 19) - epacta
-    ed = kday_after(rdate, 0)
-    return ed
+    return kday_after(rdate, 0)
 
 
 #
@@ -994,8 +966,7 @@ def cinco_de_mayo(gyear):
     cinco_de_mayo : int
         Cinco de Mayo in RDate format.
     """
-    cinco = gdate_to_rdate(gyear, 5, 5)
-    return cinco
+    return gdate_to_rdate(gyear, 5, 5)
 
 
 #
@@ -1015,8 +986,7 @@ def mothers_day(gyear):
     mothers_day : int
         Mother's Day in RDate format.
     """
-    mothers_day = nth_kday(2, 0, gyear, 5, 1)
-    return mothers_day
+    return nth_kday(2, 0, gyear, 5, 1)
 
 
 #
@@ -1036,8 +1006,7 @@ def memorial_day(gyear):
     md : int
         Memorial Day in RDate format.
     """
-    md = last_kday(1, gyear, 5, 31)
-    return md
+    return last_kday(1, gyear, 5, 31)
 
 
 #
@@ -1057,8 +1026,7 @@ def fathers_day(gyear):
     fathers_day : int
         Father's Day in RDate format.
     """
-    fathers_day = nth_kday(3, 0, gyear, 6, 1)
-    return fathers_day
+    return nth_kday(3, 0, gyear, 6, 1)
 
 
 #
@@ -1106,8 +1074,7 @@ def labor_day(gyear):
     lday : int
         Labor Day in RDate format.
     """
-    lday = first_kday(1, gyear, 9, 1)
-    return lday
+    return first_kday(1, gyear, 9, 1)
 
 
 #
@@ -1127,8 +1094,7 @@ def halloween(gyear):
     halloween : int
         Halloween in RDate format.
     """
-    halloween = gdate_to_rdate(gyear, 10, 31)
-    return halloween
+    return gdate_to_rdate(gyear, 10, 31)
 
 
 #
@@ -1173,8 +1139,7 @@ def thanksgiving_day(gyear):
     tday : int
         Thanksgiving Day in RDate format.
     """
-    tday = nth_kday(4, 4, gyear, 11, 1)
-    return tday
+    return nth_kday(4, 4, gyear, 11, 1)
 
 
 #
@@ -1240,8 +1205,7 @@ def get_holiday_names():
     holidays : list of str
         List of holiday names.
     """
-    holidays = [h for h in holiday_map]
-    return holidays
+    return list(holiday_map)
 
 
 #
@@ -1268,8 +1232,5 @@ def set_holidays(gyear, observe):
     for h in holiday_map:
         hfunc = holiday_map[h][0]
         observed = holiday_map[h][1]
-        if observed:
-            holidays[h] = hfunc(gyear, observe)
-        else:
-            holidays[h] = hfunc(gyear)
+        holidays[h] = hfunc(gyear, observe) if observed else hfunc(gyear)
     return holidays

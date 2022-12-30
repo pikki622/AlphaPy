@@ -51,8 +51,7 @@ def space_name(subject, schema, fractal):
         The joined namespace string.
 
     """
-    name = USEP.join([subject, schema, fractal])
-    return name
+    return USEP.join([subject, schema, fractal])
     
 
 #

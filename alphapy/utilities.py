@@ -63,8 +63,7 @@ def get_datestamp():
     """
     d = datetime.now()
     f = "%Y%m%d"
-    datestamp = d.strftime(f)
-    return datestamp
+    return d.strftime(f)
 
 
 #
@@ -89,10 +88,7 @@ def most_recent_file(directory, file_spec):
     """
     # Create search path
     search_path = SSEP.join([directory, file_spec])
-    # find the latest file
-    file_name = max(glob.iglob(search_path), key=os.path.getctime)
-    # load the model predictor
-    return file_name
+    return max(glob.iglob(search_path), key=os.path.getctime)
 
 
 #
@@ -152,8 +148,7 @@ def remove_list_items(elements, alist):
     >>> remove_list_items([test_func], test_list)  # ['a', 'b', 'c']
 
     """
-    sublist = [x for x in alist if x not in elements]
-    return sublist
+    return [x for x in alist if x not in elements]
 
 
 #
@@ -182,8 +177,7 @@ def subtract_days(date_string, ndays):
 
     """
     new_date_string = None
-    valid = valid_date(date_string)
-    if valid:
+    if valid := valid_date(date_string):
         date_dt = datetime.strptime(date_string, "%Y-%m-%d")
         new_date = date_dt - timedelta(days=ndays)
         new_date_string = new_date.strftime("%Y-%m-%d")
