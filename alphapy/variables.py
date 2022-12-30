@@ -117,7 +117,7 @@ class Variable(object):
             logger.info("Expression '%s' already exists for key %s", expr, key)
             return
         else:
-            if replace or not name in Variable.variables:
+            if replace or name not in Variable.variables:
                 if not valid_name(name):
                     logger.info("Invalid variable key: %s", name)
                     return
@@ -194,8 +194,7 @@ def vparse(vname):
     vxlag = lsplit[0]
     # if necessary, substitute any alias
     root = vxlag.split(USEP)[0]
-    alias = get_alias(root)
-    if alias:
+    if alias := get_alias(root):
         vxlag = vxlag.replace(root, alias)
     vsplit = vxlag.split(USEP)
     root = vsplit[0]
@@ -234,11 +233,7 @@ def allvars(expr):
     """
     regex = re.compile('\w+')
     items = regex.findall(expr)
-    vlist = []
-    for item in items:
-        if valid_name(item):
-            vlist.append(item)
-    return vlist
+    return [item for item in items if valid_name(item)]
 
 
 #
@@ -322,9 +317,7 @@ def vsub(v, expr):
     # find all number locations in variable name
     vnums = nreg.findall(v)
     viter = nreg.finditer(v)
-    vlocs = []
-    for match in viter:
-        vlocs.append(match.span())
+    vlocs = [match.span() for match in viter]
     # find all number locations in expression
     # find all non-number locations as well
     elen = len(expr)
@@ -345,10 +338,7 @@ def vsub(v, expr):
             newexpr += expr[enloc[0]:enloc[1]] + v[vlocs[i][0]:vlocs[i][1]]
         else:
             newexpr += expr[enloc[0]:enloc[1]] + expr[elocs[i][0]:elocs[i][1]]
-    if elocs:
-        estart = elocs[len(elocs)-1][1]
-    else:
-        estart = 0
+    estart = elocs[-1][1] if elocs else 0
     newexpr += expr[estart:elen]
     return newexpr
 
@@ -403,7 +393,7 @@ def vexec(f, v, vfuncs=None):
             vroot = Variable.variables[root]
             expr = vroot.expr
             expr_new = vsub(vxlag, expr)
-            estr = "%s" % expr_new
+            estr = f"{expr_new}"
             logger.debug("Expression: %s", estr)
             # pandas eval
             f[vxlag] = f.eval(estr)
@@ -450,7 +440,7 @@ def vexec(f, v, vfuncs=None):
                 # Create the variable by calling the function
                 f[v] = func(*newlist)
             elif func_name not in dir(builtins):
-                module_error = "*** Could not find module to execute function {} ***".format(func_name)
+                module_error = f"*** Could not find module to execute function {func_name} ***"
                 logger.error(module_error)
                 sys.exit(module_error)
     # if necessary, add the lagged variable
@@ -578,8 +568,7 @@ def vunapply(group, vname):
             if vname not in f.columns:
                 logger.info("Variable %s not in %s frame", vname, g)
             else:
-                estr = "Frame.frames['%s'].df = f.df.drop('%s', axis=1)" \
-                        % (fname, vname)
+                estr = f"Frame.frames['{fname}'].df = f.df.drop('{vname}', axis=1)"
                 exec(estr)
         else:
             logger.info("Frame not found: %s", fname)

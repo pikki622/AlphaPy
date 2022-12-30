@@ -98,11 +98,8 @@ def get_market_config():
 
     # Store configuration parameters in dictionary
 
-    specs = {}
+    specs = {'create_model': cfg['market']['create_model']}
 
-    # Section: market [this section must be first]
-
-    specs['create_model'] = cfg['market']['create_model']
     fractal = cfg['market']['data_fractal']
     try:
         _ = pd.to_timedelta(fractal)
@@ -303,10 +300,7 @@ def market_pipeline(model, market_specs):
     else:
         logger.info("No Model (System Only)")
 
-    # Run a system
-
-    system_specs = market_specs['system']
-    if system_specs:
+    if system_specs := market_specs['system']:
         # get the system specs
         system_name = system_specs['name']
         longentry = system_specs['longentry']
@@ -391,23 +385,12 @@ def main(args=None):
 
     # Set train and predict dates
 
-    if args.train_date:
-        train_date = args.train_date
-    else:
-        train_date = pd.datetime(1900, 1, 1).strftime("%Y-%m-%d")
-
-    if args.predict_date:
-        predict_date = args.predict_date
-    else:
-        predict_date = datetime.date.today().strftime("%Y-%m-%d")
-
-    # Verify that the dates are in sequence.
-
+    train_date = args.train_date or pd.datetime(1900, 1, 1).strftime("%Y-%m-%d")
+    predict_date = args.predict_date or datetime.date.today().strftime("%Y-%m-%d")
     if train_date >= predict_date:
         raise ValueError("Training date must be before prediction date")
-    else:
-        logger.info("Training Date: %s", train_date)
-        logger.info("Prediction Date: %s", predict_date)
+    logger.info("Training Date: %s", train_date)
+    logger.info("Prediction Date: %s", predict_date)
 
     # Read stock configuration file
     market_specs = get_market_config()

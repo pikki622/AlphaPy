@@ -184,7 +184,7 @@ def find_optional_packages():
         estimator_map['XGBM'] = xgb.XGBClassifier
         estimator_map['XGBR'] = xgb.XGBRegressor
     except:
-        logger.info("Cannot load %s" % module_name)
+        logger.info(f"Cannot load {module_name}")
 
     module_name = 'lightgbm'
     try:
@@ -192,7 +192,7 @@ def find_optional_packages():
         estimator_map['LGB'] = lgb.LGBMClassifier
         estimator_map['LGBR'] = lgb.LGBMRegressor
     except:
-        logger.info("Cannot load %s" % module_name)
+        logger.info(f"Cannot load {module_name}")
 
     module_name = 'catboost'
     try:
@@ -200,7 +200,7 @@ def find_optional_packages():
         estimator_map['CATB'] = catb.CatBoostClassifier
         estimator_map['CATBR'] = catb.CatBoostRegressor
     except:
-        logger.info("Cannot load %s" % module_name)
+        logger.info(f"Cannot load {module_name}")
 
     return
 
@@ -242,10 +242,7 @@ def get_algos_config(cfg_dir):
     minimum_keys = ['model_type', 'params', 'grid']
     required_keys_keras = minimum_keys + ['layers', 'compiler']
     for algo in specs:
-        if 'KERAS' in algo:
-            required_keys = required_keys_keras
-        else:
-            required_keys = minimum_keys
+        required_keys = required_keys_keras if 'KERAS' in algo else minimum_keys
         algo_keys = list(specs[algo].keys())
         if set(algo_keys) != set(required_keys):
             logger.warning("Algorithm %s has the wrong keys %s",
@@ -258,7 +255,7 @@ def get_algos_config(cfg_dir):
             if model_type in model_types:
                 specs[algo]['model_type'] = ModelType(model_types[model_type])
             else:
-                raise ValueError("algos.yml model:type %s unrecognized" % model_type)
+                raise ValueError(f"algos.yml model:type {model_type} unrecognized")
 
     # Algorithm Specifications
     return specs
@@ -306,7 +303,7 @@ def create_keras_model(nlayers,
 
     model = Sequential()
     for i in range(nlayers):
-        lvar = 'layer' + str(i+1)
+        lvar = f'layer{str(i + 1)}'
         layer = eval(lvar)
         model.add(eval(layer))
     model.compile(optimizer=optimizer, loss=loss, metrics=[metrics])
@@ -378,16 +375,16 @@ def get_estimators(model):
             func = estimator_map[algo]
         except:
             algo_found = False
-            logger.info("Algorithm %s not found (check package installation)" % algo)
+            logger.info(f"Algorithm {algo} not found (check package installation)")
         if algo_found:
             if 'KERAS' in algo:
                 params['build_fn'] = create_keras_model
                 layers = algo_specs[algo]['layers']
                 params['nlayers'] = len(layers)
-                input_dim_string = ', input_dim={})'.format(X_train.shape[1])
+                input_dim_string = f', input_dim={X_train.shape[1]})'
                 layers[0] = layers[0].replace(')', input_dim_string)
                 for i, layer in enumerate(layers):
-                    params['layer'+str(i+1)] = layer
+                    params[f'layer{str(i + 1)}'] = layer
                 compiler = algo_specs[algo]['compiler']
                 params['optimizer'] = compiler['optimizer']
                 params['loss'] = compiler['loss']
@@ -398,7 +395,7 @@ def get_estimators(model):
             est = func(**params)
             grid = algo_specs[algo]['grid']
             estimators[algo] = Estimator(algo, model_type, est, grid)
-            
+
 
     # return the entire classifier list
     return estimators

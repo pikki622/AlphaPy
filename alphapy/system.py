@@ -352,12 +352,11 @@ def run_system(model,
 
     gtlist = []
     for symbol in gmembers:
-        # generate the trades for this member
-        tlist = trade_system(model, system, gspace, intraday, symbol, quantity)
-        if tlist:
+        if tlist := trade_system(
+            model, system, gspace, intraday, symbol, quantity
+        ):
             # add trades to global trade list
-            for item in tlist:
-                gtlist.append(item)
+            gtlist.extend(iter(tlist))
         else:
             logger.info("No trades for symbol %s", symbol)
 

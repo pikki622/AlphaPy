@@ -168,15 +168,12 @@ def training_pipeline(model):
         logger.info("Unique Testing Values for %s : %s", target, uv)
         logger.info("Unique Testing Counts for %s : %s", target, uc)
 
-    # Merge training and test data
-
-    if X_train.shape[1] == X_test.shape[1]:
-        split_point = X_train.shape[0]
-        X_all = pd.concat([X_train, X_test])
-    else:
+    if X_train.shape[1] != X_test.shape[1]:
         raise IndexError("The number of training and test columns [%d, %d] must match." %
                          (X_train.shape[1], X_test.shape[1]))
 
+    split_point = X_train.shape[0]
+    X_all = pd.concat([X_train, X_test])
     # Apply transforms to the feature matrix
     X_all = apply_transforms(model, X_all)
 
@@ -223,8 +220,6 @@ def training_pipeline(model):
     # Shuffle the data [if specified]
     model = shuffle_data(model)
 
-    # Oversampling or Undersampling [if specified]
-
     if model_type == ModelType.classification:
         if sampling:
             model = sample_data(model)
@@ -244,7 +239,7 @@ def training_pipeline(model):
     # Get the available scorers
 
     if scorer not in scorers:
-        raise KeyError("Scorer function %s not found" % scorer)
+        raise KeyError(f"Scorer function {scorer} not found")
 
     # Model Selection
 

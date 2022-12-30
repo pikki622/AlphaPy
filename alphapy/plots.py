@@ -200,8 +200,7 @@ def get_plot_directory(model):
 
     """
     directory = model.specs['directory']
-    plot_directory = SSEP.join([directory, 'plots'])
-    return plot_directory
+    return SSEP.join([directory, 'plots'])
 
 
 #
@@ -249,23 +248,22 @@ def write_plot(vizlib, plot, plot_type, tag, directory=None):
 
     # Validate visualization library
 
-    if (vizlib == 'matplotlib' or
-       vizlib == 'seaborn' or
-       vizlib == 'bokeh'):
+    if vizlib in ['matplotlib', 'seaborn', 'bokeh']:
         # supported library
         pass
     elif vizlib == 'plotly':
-        raise ValueError("Unsupported data visualization library: %s" % vizlib)
+        raise ValueError(f"Unsupported data visualization library: {vizlib}")
     else:
-        raise ValueError("Unrecognized data visualization library: %s" % vizlib)
+        raise ValueError(f"Unrecognized data visualization library: {vizlib}")
 
     # Save or display the plot
 
     if directory:
-        if vizlib == 'bokeh':
-            file_only = ''.join([plot_type, USEP, tag, '.html'])
-        else:
-            file_only = ''.join([plot_type, USEP, tag, '.png'])
+        file_only = (
+            ''.join([plot_type, USEP, tag, '.html'])
+            if vizlib == 'bokeh'
+            else ''.join([plot_type, USEP, tag, '.png'])
+        )
         file_all = SSEP.join([directory, file_only])
         logger.info("Writing plot to %s", file_all)
         if vizlib == 'matplotlib':
@@ -276,11 +274,10 @@ def write_plot(vizlib, plot, plot_type, tag, directory=None):
         else:
             output_file(file_all, title=tag)
             show(plot)
+    elif vizlib == 'bokeh':
+        show(plot)
     else:
-        if vizlib == 'bokeh':
-            show(plot)
-        else:
-            plot.plot()
+        plot.plot()
 
 
 #
@@ -341,8 +338,7 @@ def plot_calibration(model, partition):
                 (prob_pos - prob_pos.min()) / (prob_pos.max() - prob_pos.min())
         fraction_of_positives, mean_predicted_value = \
             calibration_curve(y, prob_pos, n_bins=10)
-        ax1.plot(mean_predicted_value, fraction_of_positives, "s-",
-                 label="%s" % (algo, ))
+        ax1.plot(mean_predicted_value, fraction_of_positives, "s-", label=f"{algo}")
         ax2.hist(prob_pos, range=(0, 1), bins=10, label=algo,
                  histtype="step", lw=2)
 
@@ -426,7 +422,7 @@ def plot_importance(model, partition):
             tag = USEP.join([pstring, algo])
             write_plot('matplotlib', plt, 'feature_importance', tag, plot_dir)
         else:
-            logger.info("No Feature Importances for %s" % algo)
+            logger.info(f"No Feature Importances for {algo}")
 
 
 #

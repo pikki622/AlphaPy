@@ -111,7 +111,7 @@ class Frame(object):
         # code
         if df.__class__.__name__ == 'DataFrame':
             fn = frame_name(name, space)
-            if not fn in Frame.frames:
+            if fn not in Frame.frames:
                 self.name = name
                 self.space = space
                 self.df = df
@@ -345,7 +345,7 @@ def sequence_frame(df, target, forecast_period=1, leaders=[], lag_period=1):
     df_len = len(df_cols)
 
     # Add lagged columns
-    new_cols, new_names = list(), list()
+    new_cols, new_names = [], []
     for i in range(lag_period, 0, -1):
         new_cols.append(df[df_cols].shift(i))
         new_names += ['%s[%d]' % (df_cols[j], i) for j in range(df_len)]

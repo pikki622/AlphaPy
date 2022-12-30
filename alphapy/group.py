@@ -85,7 +85,7 @@ class Group(object):
                  dynamic = True,
                  members = set()):
         # code
-        if not name in Group.groups:
+        if name not in Group.groups:
             self.name = name
             self.space = space
             self.dynamic =  dynamic
@@ -121,7 +121,7 @@ class Group(object):
         New members cannot be added to a fixed or non-dynamic group.
 
         """
-        if all([type(item) is str for item in newlist]):
+        if all(type(item) is str for item in newlist):
             newset = set(newlist)
             if self.dynamic:
                 if newset.issubset(self.members):
@@ -174,8 +174,8 @@ class Group(object):
 
         """
         if self.dynamic:
-            nonefound = not any([self.member(item) for item in remlist])
-            if nonefound == True:
+            nonefound = not any(self.member(item) for item in remlist)
+            if nonefound:
                 logger.info("Members to remove not found")
             else:
                 removed = []

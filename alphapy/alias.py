@@ -81,12 +81,12 @@ class Alias(object):
                 replace = False):
         # code
         efound = expr in [Alias.aliases[key] for key in Alias.aliases]
-        if efound == True:
+        if efound:
             key = [key for key, aexpr in list(Alias.aliases.items()) if aexpr == expr]
             logger.info("Expression %s already exists for key %s", expr, key)
             return
         else:
-            if replace == True or not name in Alias.aliases:
+            if replace == True or name not in Alias.aliases:
                 identifier = re.compile(r"^[^\d\W]\w*\Z", re.UNICODE)
                 result1 = re.match(identifier, name)
                 if result1 is None:
@@ -142,7 +142,4 @@ def get_alias(alias):
     >>> alias_value = get_alias('hc')
 
     """
-    if alias in Alias.aliases:
-        return Alias.aliases[alias]
-    else:
-        return None
+    return Alias.aliases[alias] if alias in Alias.aliases else None

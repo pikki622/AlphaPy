@@ -167,16 +167,14 @@ def get_sport_config():
 
     # Store configuration parameters in dictionary
 
-    specs = {}
-
-    # Section: sport
-
-    specs['league'] = cfg['sport']['league']
-    specs['points_max'] = cfg['sport']['points_max']
-    specs['points_min'] = cfg['sport']['points_min']
-    specs['random_scoring'] = cfg['sport']['random_scoring']
-    specs['rolling_window'] = cfg['sport']['rolling_window']   
-    specs['seasons'] = cfg['sport']['seasons']
+    specs = {
+        'league': cfg['sport']['league'],
+        'points_max': cfg['sport']['points_max'],
+        'points_min': cfg['sport']['points_min'],
+        'random_scoring': cfg['sport']['random_scoring'],
+        'rolling_window': cfg['sport']['rolling_window'],
+        'seasons': cfg['sport']['seasons'],
+    }
 
     # Log the sports parameters
 
@@ -214,11 +212,8 @@ def get_point_margin(row, score, opponent_score):
         The resulting point margin (0 if NaN).
 
     """
-    point_margin = 0
     nans = math.isnan(row[score]) or math.isnan(row[opponent_score])
-    if not nans:
-        point_margin = row[score] - row[opponent_score]
-    return point_margin
+    return 0 if nans else row[score] - row[opponent_score]
 
 
 #
@@ -239,8 +234,7 @@ def get_wins(point_margin):
         If the point margin is greater than 0, return 1, else 0.
 
     """
-    won = 1 if point_margin > 0 else 0
-    return won
+    return 1 if point_margin > 0 else 0
 
 
 #
@@ -261,8 +255,7 @@ def get_losses(point_margin):
         If the point margin is less than 0, return 1, else 0.
 
     """
-    lost = 1 if point_margin < 0 else 0
-    return lost
+    return 1 if point_margin < 0 else 0
 
 
 #
@@ -283,8 +276,7 @@ def get_ties(point_margin):
         If the point margin is equal to 0, return 1, else 0.
 
     """
-    tied = 1 if point_margin == 0 else 0
-    return tied
+    return 1 if point_margin == 0 else 0
 
 
 #
@@ -307,8 +299,7 @@ def get_day_offset(date_vector):
     """
     dv = pd.to_datetime(date_vector)
     offsets = pd.to_datetime(dv) - pd.to_datetime(dv[0])
-    day_offset = offsets.astype('timedelta64[D]').astype(int)
-    return day_offset
+    return offsets.astype('timedelta64[D]').astype(int)
 
 
 #
@@ -361,7 +352,7 @@ def get_streak(series, start_index, window):
         window = len(series)
     i = start_index
     streak = 0
-    while i >= 0 and (start_index-i+1) < window and series[i]:
+    while i >= 0 and i - i + 1 < window and series[i]:
         streak += 1
         i -= 1
     return streak
@@ -460,19 +451,19 @@ def generate_team_frame(team, tf, home_team, away_team, window):
             tf['wins'].at[index] = tf['wins'].at[index-1] + get_wins(tf['point_margin_game'].at[index])
             tf['losses'].at[index] = tf['losses'].at[index-1] + get_losses(tf['point_margin_game'].at[index])
             tf['ties'].at[index] = tf['ties'].at[index-1] + get_ties(tf['point_margin_game'].at[index])
-        tf['won_on_points'].at[index] = True if tf['point_margin_game'].at[index] > 0 else False
-        tf['lost_on_points'].at[index] = True if tf['point_margin_game'].at[index] < 0 else False
+        tf['won_on_points'].at[index] = tf['point_margin_game'].at[index] > 0
+        tf['lost_on_points'].at[index] = tf['point_margin_game'].at[index] < 0
         tf['cover_margin_game'].at[index] = tf['point_margin_game'].at[index] + line
-        tf['won_on_spread'].at[index] = True if tf['cover_margin_game'].at[index] > 0 else False
-        tf['lost_on_spread'].at[index] = True if tf['cover_margin_game'].at[index] <= 0 else False
+        tf['won_on_spread'].at[index] = tf['cover_margin_game'].at[index] > 0
+        tf['lost_on_spread'].at[index] = tf['cover_margin_game'].at[index] <= 0
         nans = math.isnan(row['home.score']) or math.isnan(row['away.score'])
         if not nans:
             tf['total_points'].at[index] = row['home.score'] + row['away.score']
         nans = math.isnan(row['over_under'])
         if not nans:
             tf['overunder_margin'].at[index] = tf['total_points'].at[index] - row['over_under']
-        tf['over'].at[index] = True if tf['overunder_margin'].at[index] > 0 else False
-        tf['under'].at[index] = True if tf['overunder_margin'].at[index] < 0 else False
+        tf['over'].at[index] = tf['overunder_margin'].at[index] > 0
+        tf['under'].at[index] = tf['overunder_margin'].at[index] < 0
         tf['point_win_streak'].at[index] = get_streak(tf['won_on_points'], index, 0)
         tf['point_loss_streak'].at[index] = get_streak(tf['lost_on_points'], index, 0)
         tf['cover_win_streak'].at[index] = get_streak(tf['won_on_spread'], index, 0)
@@ -544,8 +535,7 @@ def get_team_frame(game_frame, team, home, away):
         The extracted team frame.
 
     """
-    team_frame = game_frame[(game_frame[home] == team) | (game_frame[away] == team)]
-    return team_frame
+    return game_frame[(game_frame[home] == team) | (game_frame[away] == team)]
 
 
 #

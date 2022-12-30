@@ -190,11 +190,7 @@ def apply_transforms(model, X):
 
     if transforms:
         for fname in transforms:
-            # find feature series
-            fcols = []
-            for col in X.columns:
-                if col.split(LOFF)[0] == fname:
-                    fcols.append(col)
+            fcols = [col for col in X.columns if col.split(LOFF)[0] == fname]
             # get lag values
             lag_values = []
             for item in fcols:
@@ -204,14 +200,13 @@ def apply_transforms(model, X):
             if lag_values:
                 f_latest = fcols[lag_values.index(min(lag_values))]
                 features = apply_transform(f_latest, X, transforms[fname])
-                if features is not None:
-                    if features.shape[0] == X.shape[0]:
-                        all_features = pd.concat([all_features, features], axis=1)
-                    else:
-                        raise IndexError("The number of transform rows [%d] must match X [%d]" %
-                                         (features.shape[0], X.shape[0]))
-                else:
+                if features is None:
                     logger.info("Could not apply transform for feature %s", fname)
+                elif features.shape[0] == X.shape[0]:
+                    all_features = pd.concat([all_features, features], axis=1)
+                else:
+                    raise IndexError("The number of transform rows [%d] must match X [%d]" %
+                                     (features.shape[0], X.shape[0]))
             else:
                 logger.info("Feature %s is missing for transform", fname)
     else:
@@ -267,22 +262,21 @@ def impute_values(feature, dt, sentinel):
         feature = feature.reshape(-1, 1)
 
     if dt == 'float64':
-        logger.info("    Imputation for Data Type %s: Median Strategy" % dt)
+        logger.info(f"    Imputation for Data Type {dt}: Median Strategy")
         # replace infinity with imputed value
         feature[np.isinf(feature)] = np.nan
         imp = SimpleImputer(missing_values=np.nan, strategy='median')
     elif dt == 'int64':
-        logger.info("    Imputation for Data Type %s: Most Frequent Strategy" % dt)
+        logger.info(f"    Imputation for Data Type {dt}: Most Frequent Strategy")
         imp = SimpleImputer(missing_values=np.nan, strategy='most_frequent')
     elif dt != 'bool':
         logger.info("    Imputation for Data Type %s: Fill Strategy with %d" % (dt, sentinel))
         imp = SimpleImputer(missing_values=np.nan, strategy='constant', fill_value=sentinel)
     else:
-        logger.info("    No Imputation for Data Type %s" % dt)
+        logger.info(f"    No Imputation for Data Type {dt}")
         imp = None
 
-    imputed = imp.fit_transform(feature) if imp else feature
-    return imputed
+    return imp.fit_transform(feature) if imp else feature
 
 
 #
@@ -467,8 +461,7 @@ def float_factor(x, rounding):
     """
     num2str = '{0:.{1}f}'.format
     fstr = re.sub("[^0-9]", "", num2str(x, rounding))
-    ffactor = int(fstr) if len(fstr) > 0 else 0
-    return ffactor
+    return int(fstr) if len(fstr) > 0 else 0
 
 
 #
@@ -577,7 +570,7 @@ def get_factors(model, X_train, X_test, y_train, fnum, fname,
     try:
         enc = encoder_map[encoder](cols=[fname])
     except:
-        raise ValueError("Unknown Encoder %s" % encoder)
+        raise ValueError(f"Unknown Encoder {encoder}")
     # Transform the train and test features.
     if enc is not None:
         # fit training features
@@ -593,7 +586,7 @@ def get_factors(model, X_train, X_test, y_train, fnum, fname,
     else:
         all_features = None
         all_fnames = None
-        logger.info("Encoding for feature %s failed" % fname)
+        logger.info(f"Encoding for feature {fname} failed")
     return all_features, all_fnames
 
 
@@ -1043,13 +1036,13 @@ def create_features(model, X, X_train, X_test, y_train):
         if factors and fname in factors:
             features, fnames = get_factors(model, X_train, X_test, y_train, fnum, fname,
                                            nunique, dtype, encoder, rounding, sentinel)
-        elif dtype == 'float64' or dtype == 'int64' or dtype == 'bool':
+        elif dtype in ['float64', 'int64', 'bool']:
             features, fnames = get_numerical_features(fnum, fname, X, nunique, dtype,
                                                       sentinel, logtransform, pvalue_level)
         elif dtype == 'object':
             features, fnames = get_text_features(fnum, fname, X, nunique, vectorize, ngrams_max)
         else:
-            raise TypeError("Base Feature Error with unrecognized type %s" % dtype)
+            raise TypeError(f"Base Feature Error with unrecognized type {dtype}")
         if features.shape[0] == all_features.shape[0]:
             # add features
             all_features = np.column_stack((all_features, features))
@@ -1345,12 +1338,10 @@ def drop_features(X, drop):
         The dataframe without the dropped features.
 
     """
-    drop_cols = []
     if drop:
+        drop_cols = []
         for d in drop:
-            for col in X.columns:
-                if col.split(LOFF)[0] == d:
-                    drop_cols.append(col)
+            drop_cols.extend(col for col in X.columns if col.split(LOFF)[0] == d)
         logger.info("Dropping Features: %s", drop_cols)
         logger.info("Original Feature Count : %d", X.shape[1])
         X.drop(drop_cols, axis=1, inplace=True, errors='ignore')
@@ -1391,13 +1382,13 @@ def remove_lv_features(model, X):
 
     lv_remove = model.specs['lv_remove']
     lv_threshold = model.specs['lv_threshold']
-    predict_mode = model.specs['predict_mode']
-
     # Remove low-variance features
 
     if lv_remove:
         logger.info("Low-Variance Threshold  : %.2f", lv_threshold)
         logger.info("Original Feature Count  : %d", X.shape[1])
+        predict_mode = model.specs['predict_mode']
+
         if not predict_mode:
             selector = VarianceThreshold(threshold=lv_threshold)
             selector.fit(X)

@@ -69,8 +69,7 @@ def abovema(f, c, p = 50):
         The array containing the new feature.
 
     """
-    new_column = f[c] > ma(f, c, p)
-    return new_column
+    return f[c] > ma(f, c, p)
 
 
 #
@@ -112,8 +111,7 @@ def adx(f, p = 14):
     dim = f[c2]
     didiff = abs(dip - dim)
     disum = dip + dim
-    new_column = 100 * didiff.ewm(span=p).mean() / disum
-    return new_column
+    return 100 * didiff.ewm(span=p).mean() / disum
 
 
 #
@@ -139,8 +137,7 @@ def belowma(f, c, p = 50):
         The array containing the new feature.
 
     """
-    new_column = f[c] < ma(f, c, p)
-    return new_column
+    return f[c] < ma(f, c, p)
 
 
 #
@@ -165,8 +162,7 @@ def c2max(f, c1, c2):
         The maximum value of the two columns.
 
     """
-    max_val = max(f[c1], f[c2])
-    return max_val
+    return max(f[c1], f[c2])
 
 
 #
@@ -191,8 +187,7 @@ def c2min(f, c1, c2):
         The minimum value of the two columns.
 
     """
-    min_val = min(f[c1], f[c2])
-    return min_val
+    return min(f[c1], f[c2])
 
 
 #
@@ -217,8 +212,7 @@ def diff(f, c, n = 1):
         The array containing the new feature.
 
     """
-    new_column = np.diff(f[c], n)
-    return new_column
+    return np.diff(f[c], n)
 
 
 #
@@ -255,8 +249,7 @@ def diminus(f, p = 14):
     vexec(f, atr)
     dmm = 'dmminus'
     f[dmm] = dminus(f)
-    new_column = 100 * dminus(f).ewm(span=p).mean() / f[atr]
-    return new_column
+    return 100 * dminus(f).ewm(span=p).mean() / f[atr]
 
 
 #
@@ -293,8 +286,7 @@ def diplus(f, p = 14):
     vexec(f, atr)
     dmp = 'dmplus'
     vexec(f, dmp)
-    new_column = 100 * f[dmp].ewm(span=p).mean() / f[atr]
-    return new_column
+    return 100 * f[dmp].ewm(span=p).mean() / f[atr]
 
 
 #
@@ -327,8 +319,7 @@ def dminus(f):
     f[c1] = -net(f, 'low')
     c2 = 'upmove'
     f[c2] = net(f, 'high')
-    new_column = f.apply(gtval0, axis=1, args=[c1, c2])
-    return new_column
+    return f.apply(gtval0, axis=1, args=[c1, c2])
 
 
 #
@@ -363,8 +354,7 @@ def dmplus(f):
     f[c1] = net(f, 'high')
     c2 = 'downmove'
     f[c2] = -net(f, 'low')
-    new_column = f.apply(gtval0, axis=1, args=[c1, c2])
-    return new_column
+    return f.apply(gtval0, axis=1, args=[c1, c2])
 
 
 #
@@ -387,8 +377,7 @@ def down(f, c):
         The array containing the new feature.
 
     """
-    new_column = f[c] < 0
-    return new_column
+    return f[c] < 0
 
 
 #
@@ -411,8 +400,7 @@ def dpc(f, c):
         The array containing the new feature.
 
     """
-    new_column = f.apply(mval, axis=1, args=[c])
-    return new_column
+    return f.apply(mval, axis=1, args=[c])
 
 
 #
@@ -445,8 +433,7 @@ def ema(f, c, p = 20):
     .. [IP_EMA] http://www.investopedia.com/terms/e/ema.asp
 
     """
-    new_column = pd.ewma(f[c], span=p)
-    return new_column
+    return pd.ewma(f[c], span=p)
 
 
 #
@@ -579,8 +566,7 @@ def gap(f):
     c1 = 'open'
     c2 = 'close[1]'
     vexec(f, c2)
-    new_column = 100 * pchange2(f, c1, c2)
-    return new_column
+    return 100 * pchange2(f, c1, c2)
 
 
 #
@@ -608,8 +594,7 @@ def gapbadown(f):
     .. [IP_BAGAP] http://www.investopedia.com/terms/b/breakawaygap.asp
 
     """
-    new_column = f['open'] < f['low'].shift(1)
-    return new_column
+    return f['open'] < f['low'].shift(1)
 
 
 #
@@ -635,8 +620,7 @@ def gapbaup(f):
     supported by levels of high volume* [IP_BAGAP]_.
 
     """
-    new_column = f['open'] > f['high'].shift(1)
-    return new_column
+    return f['open'] > f['high'].shift(1)
 
 
 #
@@ -663,8 +647,7 @@ def gapdown(f):
     occurring in between* [IP_GAP]_.
 
     """
-    new_column = f['open'] < f['close'].shift(1)
-    return new_column
+    return f['open'] < f['close'].shift(1)
 
 
 #
@@ -691,8 +674,7 @@ def gapup(f):
     occurring in between* [IP_GAP]_.
 
     """
-    new_column = f['open'] > f['close'].shift(1)
-    return new_column
+    return f['open'] > f['close'].shift(1)
 
 
 #
@@ -718,8 +700,7 @@ def gtval(f, c1, c2):
         The array containing the new feature.
 
     """
-    new_column = f[c1] > f[c2]
-    return new_column
+    return f[c1] > f[c2]
 
 
 #
@@ -746,11 +727,7 @@ def gtval0(f, c1, c2):
         A positive value or zero.
 
     """
-    if f[c1] > f[c2] and f[c1] > 0:
-        new_val = f[c1]
-    else:
-        new_val = 0
-    return new_val
+    return f[c1] if f[c1] > f[c2] and f[c1] > 0 else 0
 
 
 #
@@ -776,8 +753,7 @@ def higher(f, c, o = 1):
         The array containing the new feature.
 
     """
-    new_column = f[c] > f[c].shift(o)
-    return new_column
+    return f[c] > f[c].shift(o)
 
 
 #
@@ -802,8 +778,7 @@ def highest(f, c, p = 20):
         The array containing the new feature.
 
     """
-    new_column = f[c].rolling(p).max()
-    return new_column
+    return f[c].rolling(p).max()
 
 
 #
@@ -826,8 +801,7 @@ def hlrange(f, p = 1):
         The array containing the new feature.
 
     """
-    new_column = highest(f, 'high', p) - lowest(f, 'low', p)
-    return new_column
+    return highest(f, 'high', p) - lowest(f, 'low', p)
 
 
 #
@@ -853,8 +827,7 @@ def lower(f, c, o = 1):
         The array containing the new feature.
 
     """
-    new_column = f[c] < f[c].shift(o)
-    return new_column
+    return f[c] < f[c].shift(o)
 
 
 #
@@ -912,8 +885,7 @@ def ma(f, c, p = 20):
     .. [WIKI_MA] https://en.wikipedia.org/wiki/Moving_average
 
     """
-    new_column = f[c].rolling(p).mean()
-    return new_column
+    return f[c].rolling(p).mean()
 
 
 #
@@ -940,8 +912,7 @@ def maratio(f, c, p1 = 1, p2 = 10):
         The array containing the new feature.
 
     """
-    new_column = ma(f, c, p1) / ma(f, c, p2)
-    return new_column
+    return ma(f, c, p1) / ma(f, c, p2)
 
 
 #
@@ -964,8 +935,7 @@ def mval(f, c):
         Negative value or zero.
 
     """
-    new_val = -f[c] if f[c] < 0 else 0
-    return new_val
+    return -f[c] if f[c] < 0 else 0
 
 
 #
@@ -998,8 +968,7 @@ def net(f, c='close', o = 1):
     .. [IP_NET] http://www.investopedia.com/terms/n/netchange.asp
 
     """
-    new_column = f[c] - f[c].shift(o)
-    return new_column
+    return f[c] - f[c].shift(o)
 
 
 #
@@ -1033,8 +1002,7 @@ def netreturn(f, c, o = 1):
     .. [IP_ROI] http://www.investopedia.com/terms/r/returnoninvestment.asp
 
     """
-    new_column = 100 * pchange1(f, c, o)
-    return new_column
+    return 100 * pchange1(f, c, o)
 
 
 #
@@ -1059,8 +1027,7 @@ def pchange1(f, c, o = 1):
         The array containing the new feature.
 
     """
-    new_column = f[c] / f[c].shift(o) - 1.0
-    return new_column
+    return f[c] / f[c].shift(o) - 1.0
 
 
 #
@@ -1085,8 +1052,7 @@ def pchange2(f, c1, c2):
         The array containing the new feature.
 
     """
-    new_column = f[c1] / f[c2] - 1.0
-    return new_column
+    return f[c1] / f[c2] - 1.0
 
 
 #
@@ -1109,8 +1075,7 @@ def pval(f, c):
         Positive value or zero.
 
     """
-    new_val = f[c] if f[c] > 0 else 0
-    return new_val
+    return max(f[c], 0)
 
 
 #
@@ -1152,8 +1117,7 @@ def rindex(f, ci, ch, cl, p = 1):
     ll = lowest(f, cl, p)
     fn = f[ci].shift(o) - ll
     fd = hh - ll
-    new_column = 100 * fn / fd
-    return new_column
+    return 100 * fn / fd
 
 
 #
@@ -1191,8 +1155,7 @@ def rsi(f, c, p = 14):
     f['mval'] = dpc(f, cdiff)
     upcs = ma(f, 'pval', p)
     dpcs = ma(f, 'mval', p)
-    new_column = 100 - (100 / (1 + (upcs / dpcs)))
-    return new_column
+    return 100 - (100 / (1 + (upcs / dpcs)))
 
 
 #
@@ -1220,8 +1183,7 @@ def rtotal(vec):
     """
     tcount = np.count_nonzero(vec)
     fcount = len(vec) - tcount
-    running_total = tcount - fcount
-    return running_total
+    return tcount - fcount
 
 
 #
@@ -1247,8 +1209,7 @@ def runs(vec):
     >>> vec.rolling(window=20).apply(runs)
 
     """
-    runs_value = len(list(itertools.groupby(vec)))
-    return runs_value
+    return len(list(itertools.groupby(vec)))
 
 
 #
@@ -1375,8 +1336,7 @@ def streak(vec):
     >>> vec.rolling(window=20).apply(streak)
 
     """
-    latest_streak = [len(list(g)) for k, g in itertools.groupby(vec)][-1]
-    return latest_streak
+    return [len(list(g)) for k, g in itertools.groupby(vec)][-1]
 
 
 #
@@ -1423,8 +1383,7 @@ def texplode(f, c):
     fpad = str().join(['{:', BSEP, '>', str(maxlen), '}'])
     fcpad = fc.apply(fpad.format)
     fcex = fcpad.apply(lambda x: pd.Series(list(x)))
-    dummies = pd.get_dummies(fcex)
-    return dummies
+    return pd.get_dummies(fcex)
 
 
 #
@@ -1454,8 +1413,7 @@ def truehigh(f):
     c1 = 'low[1]'
     vexec(f, c1)
     c2 = 'high'
-    new_column = f.apply(c2max, axis=1, args=[c1, c2])
-    return new_column
+    return f.apply(c2max, axis=1, args=[c1, c2])
 
 
 #
@@ -1483,8 +1441,7 @@ def truelow(f):
     c1 = 'high[1]'
     vexec(f, c1)
     c2 = 'low'
-    new_column = f.apply(c2min, axis=1, args=[c1, c2])
-    return new_column
+    return f.apply(c2min, axis=1, args=[c1, c2])
 
 
 #
@@ -1509,8 +1466,7 @@ def truerange(f):
     *True High - True Low* [TS_TR]_.
 
     """
-    new_column = truehigh(f) - truelow(f)
-    return new_column
+    return truehigh(f) - truelow(f)
 
 
 #
@@ -1533,8 +1489,7 @@ def up(f, c):
         The array containing the new feature.
 
     """
-    new_column = f[c] > 0
-    return new_column
+    return f[c] > 0
 
 
 #
@@ -1557,8 +1512,7 @@ def upc(f, c):
         The array containing the new feature.
 
     """
-    new_column = f.apply(pval, axis=1, args=[c])
-    return new_column
+    return f.apply(pval, axis=1, args=[c])
 
 
 #
@@ -1600,8 +1554,7 @@ def xmadown(f, c='close', pfast = 20, pslow = 50):
     sma_prev = sma.shift(1)
     lma = ma(f, c, pslow)
     lma_prev = lma.shift(1)
-    new_column = (sma < lma) & (sma_prev > lma_prev)
-    return new_column
+    return (sma < lma) & (sma_prev > lma_prev)
 
 
 #
@@ -1641,8 +1594,7 @@ def xmaup(f, c='close', pfast = 20, pslow = 50):
     sma_prev = sma.shift(1)
     lma = ma(f, c, pslow)
     lma_prev = lma.shift(1)
-    new_column = (sma > lma) & (sma_prev < lma_prev)
-    return new_column
+    return (sma > lma) & (sma_prev < lma_prev)
 
 
 #
@@ -1682,8 +1634,4 @@ def zscore(vec):
     sr2num = fac1 * (fac1 - n1 - n2)
     sr2den = math.pow(fac2, 2) * (fac2 - 1)
     sr = math.sqrt(sr2num / sr2den)
-    if sr2den and sr:
-        zscore = (runs(vec) - rbar) / sr
-    else:
-        zscore = 0
-    return zscore
+    return (runs(vec) - rbar) / sr if sr2den and sr else 0
